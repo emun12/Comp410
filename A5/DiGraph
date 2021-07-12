@@ -1,0 +1,302 @@
+package DiGraph_A5;
+
+import java.util.*;
+
+public class DiGraph implements DiGraphInterface {
+	 // in here go all your data and methods for the graph
+	public HashMap<Long,Long> weightMap;
+	public HashMap<Long,String> nodes,endMap,edgeMap,startMap;
+	public HashMap<Integer,Long> indexMap,indexEdgeMap;
+	
+	public long nodeCount,edgeCount;
+	public int indexCount,indexEdgeCount;
+	
+	  public DiGraph () { // default constructor
+	    // explicitly include this
+	    // we need to have the default constructor
+	    // if you then write others, this one will still be there
+		  nodes = new HashMap<>();
+		  indexMap = new HashMap<>();
+		  indexEdgeMap = new HashMap<>();
+		  weightMap = new HashMap<>();
+		  endMap = new HashMap<>();
+		  edgeMap = new HashMap<>();
+		  startMap = new HashMap<>();
+		  nodeCount = 0;
+		  edgeCount = 0;
+		  indexCount=0;
+		  indexEdgeCount=0;
+		  
+	  }
+
+	@Override
+	public ShortestPathInfo[] shortestPath(String label) {
+		long sPath[] = new long[getNodes().size()];
+		
+		
+		for(int i=0; i<numNodes();i++) {
+			boolean isEnd = true;
+			String sLabel = getNodes().get(getIndexMap().get(i));
+			String ans ="";
+			int k=0;
+			while(sLabel!=null) {
+				ans.concat(sLabel);
+				System.out.println(sLabel);
+				sLabel= scan(sLabel);
+				if(getEndMap().containsValue(sLabel)) {
+					isEnd = false;
+				}
+				
+			}
+			System.out.println(sLabel);
+		}
+		return null;
+	}
+
+	
+//helper function	
+	public String scan(String slabel) {
+		long min_weight = 10000000;
+		int idx = -1;
+		for(int j=0;j<numEdges();j++) {
+			if (getStartMap().get(getEdgeIndexMap().get(j))==slabel){
+				long weight = getWeightMap().get(getEdgeIndexMap().get(j));
+				if(weight<min_weight) {
+					min_weight = weight;
+					idx = j;
+					//System.out.println(slabel.concat("!"));
+					//System.out.println(getEndMap().get(getEdgeIndexMap().get(idx)));
+				}
+			}
+		}
+		//min idx is now known
+		return getEndMap().get(getEdgeIndexMap().get(idx));
+	}
+	
+	
+	@Override
+	public boolean addNode(long idNum, String label) {
+		//id cannot be negative
+		
+		int iindex = findIndex(getIndexMap(),idNum);
+		int sindex = findStr(getNodes(),label);
+		//System.out.println(iindex);
+		if(idNum<0 || iindex>=0 || sindex >=0) {
+			return false;
+		}
+		else {
+			getIndexMap().put(numIndex(),idNum);
+			//System.out.println(getIndexMap().get(numIndex()));
+			getNodes().put(idNum,label);
+			//System.out.println(getNodes().get(getIndexMap().get(numIndex())));
+			incIndex();
+			return true;			
+		}
+	}
+	
+	@Override
+	public boolean addEdge(long idNum, String sLabel, String dLabel, long weight, String eLabel) {
+		//returns false if edge number is not unique or less than 0
+        //returns false if source node is not in graph
+        //returns false if destination node is not in graph
+        //returns false is there already is an edge between these 2 nodes
+		boolean numUnique = getEdgeIndexMap().containsValue(idNum);
+		boolean sInGraph = getNodes().containsValue(sLabel);
+		boolean dInGraph = getNodes().containsValue(dLabel);
+		boolean isEdge = findEdgeStr2(getStartMap(),getEndMap(),sLabel,dLabel)==-1;
+		//System.out.println(getEdgeIndexMap().values());
+		//System.out.println(numUnique);
+		//System.out.println(sInGraph);
+		//System.out.println(dInGraph);
+		//System.out.println(isEdge);
+		if (idNum>=0 && !numUnique && sInGraph && dInGraph && isEdge) {
+			getEdgeIndexMap().put(numEdgeIndex(),idNum);
+			getStartMap().put(idNum,sLabel);
+			getEndMap().put(idNum,dLabel);
+			getWeightMap().put(idNum,weight);
+			getEdgeMap().put(idNum,eLabel);
+			
+			incEdgeIndex();
+			edgeCount++;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean delNode(String label) {
+		
+		int isFound = -1;
+		for(int i=0; i<numNodes();i++) {
+			int nodeIndex = findStr(getNodes(),label);
+			if (nodeIndex>=0) {
+				getNodes().remove(getIndexMap().get(nodeIndex));
+				getIndexMap().remove(nodeIndex);
+				isFound++;
+				nodeIndex=-1;
+			}
+			
+		}
+		for(int i=0; i<numEdges();i++) {
+			int sIndex = findEdgeStr(getStartMap(),label);
+			if (sIndex>=0 ) {
+				getStartMap().remove(getEdgeIndexMap().get(sIndex));
+				getEndMap().remove(getEdgeIndexMap().get(sIndex));
+				getEdgeMap().remove(getEdgeIndexMap().get(sIndex));
+				getWeightMap().remove(getEdgeIndexMap().get(sIndex));
+				getEdgeIndexMap().remove(sIndex);
+				isFound++;
+				sIndex=-1;
+			}
+			
+			int eIndex = findEdgeStr(getEndMap(),label);
+			if (eIndex>=0) {
+				getStartMap().remove(getEdgeIndexMap().get(eIndex));
+				getEndMap().remove(getEdgeIndexMap().get(eIndex));
+				getEdgeMap().remove(getEdgeIndexMap().get(eIndex));
+				getWeightMap().remove(getEdgeIndexMap().get(eIndex));
+				getEdgeIndexMap().remove(eIndex);
+				isFound++;
+				eIndex=-1;
+			}
+		}
+		
+		//System.out.println(getIndexMap().get(index));
+		System.out.println(getNodes().values());
+		System.out.println(getStartMap().values());
+		System.out.println(getEndMap().values());
+		System.out.println(getEdgeMap().values());
+		if (isFound>=0) {
+			return true;
+		}
+		else {
+			return false;	
+		}
+		
+	}
+	
+	@Override
+	public boolean delEdge(String sLabel, String dLabel) {
+		
+		int isFound=-1;
+		for(int i=0;i<numEdges();i++) {
+			int sIndex = findEdgeStr2(getStartMap(),getEndMap(),sLabel,dLabel);
+			//int dIndex = findEdgeStr(getEndMap(),dLabel);
+			System.out.println(sIndex);
+			if (sIndex>=0) {
+				getStartMap().remove(getEdgeIndexMap().get(sIndex));
+				getWeightMap().remove(getEdgeIndexMap().get(sIndex));
+				getEndMap().remove(getEdgeIndexMap().get(sIndex));
+				getEdgeMap().remove(getEdgeIndexMap().get(sIndex));
+				getEdgeIndexMap().remove(sIndex);
+				isFound++;
+			}
+		}
+		//System.out.println(sIndex);
+		//System.out.println(getNodes().values());
+		//System.out.println(getStartMap().values());
+		//System.out.println(getEndMap().values());
+		//System.out.println(getEdgeMap().values());
+		//System.out.println(getEdgeIndexMap().values());
+		if(isFound>=0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	@Override
+	public long numNodes() {
+		// TODO Auto-generated method stub
+		return (long)getNodes().size();
+	}
+	@Override
+	public long numEdges() {
+		// TODO Auto-generated method stub
+		return getEdgeMap().size();
+	}
+
+//Helper functions
+	//Returns index of found string
+	public int findStr(HashMap<Long,String> map,String value) {
+		for(int i=0; i<numIndex();i++) {
+			if(map.get(getIndexMap().get(i))==value) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	public int findEdgeStr(HashMap<Long,String> map,String value) {
+		for(int i=0; i<numEdgeIndex();i++) {
+			if(map.get(getEdgeIndexMap().get(i))==value) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	public int findEdgeStr2(HashMap<Long,String> map,HashMap<Long,String> map2,String value1,String value2) {
+		for(int i=0; i<numEdgeIndex();i++) {
+			if(map.get(getEdgeIndexMap().get(i))==value1
+					&& map2.get(getEdgeIndexMap().get(i))==value2) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	public int findIndex(HashMap<Integer,Long> map,long value) {
+		for(int i=0; i<numIndex();i++) {
+			if(map.get(i)==value) {
+				return i;
+			}
+		}
+		return -1;
+	}
+//End Helper functions
+	
+
+	
+	public int numIndex() {
+		// TODO Auto-generated method stub
+		return indexCount;
+	}
+	public void incIndex() {
+		// TODO Auto-generated method stub
+		indexCount++;
+	}
+	public int numEdgeIndex() {
+		// TODO Auto-generated method stub
+		return indexEdgeCount;
+	}
+	public void incEdgeIndex() {
+		// TODO Auto-generated method stub
+		indexEdgeCount++;
+	}
+
+
+	public HashMap<Long,String> getNodes() {
+		return nodes;
+	}
+	public HashMap<Long,Long> getWeightMap() {
+		return weightMap;
+	}
+	public HashMap<Long,String> getEndMap() {
+		return endMap;
+	}
+	public HashMap<Long,String> getEdgeMap() {
+		return edgeMap;
+	}
+	public HashMap<Long,String> getStartMap() {
+		return startMap;
+	}
+	public HashMap<Integer,Long> getIndexMap() {
+		return indexMap;
+	}
+	public HashMap<Integer,Long> getEdgeIndexMap() {
+		return indexEdgeMap;
+	}
+
+
+}
