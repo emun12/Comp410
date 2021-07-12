@@ -1,0 +1,368 @@
+/**
+ * COMP 410
+ *See inline comment descriptions for methods not described in interface.
+ *
+ */
+package LinkedList_A1;
+
+//import static org.junit.Assert.assertNotNull;
+
+public class LinkedListImpl implements LIST_Interface {
+	Node headCell; //this will be the entry point to your linked list (the head)
+	Node lastCell; // this is the Node at the end of the list... the starting place
+	// if you wanted to traverse the list backwards
+
+	private int size;
+	// private instance variable size that can be accessed anywhere in the class
+
+	public LinkedListImpl(){//this constructor is needed for testing purposes. Please don't modify!
+		headCell = null; //Note that the root's data is not a true part of your data set!
+		lastCell = null;
+	}
+
+	//implement all methods in interface, and include the getRoot method we made for testing 
+	// purposes. Feel free to implement private helper methods!
+
+	// add the fields you need to add to make it work... like a 
+
+	public Node getRoot(){ //leave this method as is, used by the grader to grab your linkedList easily.
+		return headCell;
+	}
+	public Node getLast(){ //leave this method as is, used by the grader to grab your linkedList easily.
+		return lastCell;
+	}
+
+
+
+	@Override
+	public boolean insert(double elt, int index) {
+		// Checking for edge cases
+		if(index > size) {
+			// Not a possible input
+			return false;
+		}
+		if(index < 0) {
+			// Not a possible input
+			return false;
+		}
+
+		Node prev = headCell;
+		Node next = lastCell;
+		Node newOne = new Node(elt);
+		// make a new Node to input into the list that has data values of elt
+
+		if (index == 0) {
+			// if it wants to put the new cell right at the beginning of a linked list
+			if(size == 0) {
+				Node newTemp = new Node(elt);
+				headCell = newTemp;
+				lastCell = newTemp;
+				size++;
+				return true;
+				// if the linked list is empty, put in the new cell and that new cell will be headCell and lastCell
+				// since there is only 1 cell in the list
+			} else {
+				newOne.next = prev;
+				prev.prev = newOne;
+				headCell = newOne;
+				size++;
+				return true;
+				// make the new cell as headCell and then shift the other cells down.
+			}
+		}
+
+		if (index > 0) {
+			// if it wants to put in a cell somewhere in the middle of a linked cell
+			if (size == index) {
+				next.next = newOne;
+				newOne.prev = next;
+				lastCell = newOne;
+				size++;
+				return true;
+				// wants to put the new cell right at the end of the list 
+			}
+
+
+			Node inputtingCell = new Node(elt);
+			// the new cell to put into the linked list
+			Node n = headCell;
+
+			for(int i=0; i<index;i++) {
+				n = n.next;
+			}
+			// this loop will allow you to find the index at which you want to physically insert the
+			// new cell
+
+			Node backwards = n.prev;
+
+			inputtingCell.prev = backwards;
+			backwards.next = inputtingCell;
+			// this makes sure that the old headCell is behind the new Cell that was just inserted
+
+			inputtingCell.next = n;
+			n.prev = inputtingCell;
+			// this makes sure that the new cell is between 2 cells
+
+			size++;
+			return true;
+
+
+		} 
+
+		return false;
+		// This means that a new cell was not actually put into the linked list
+
+
+	}
+
+	@Override
+	public boolean insort(double elt) {
+
+		Node newOne = new Node(elt);
+		// creates the new Node that will be inputted into the linked cell list
+		
+		
+
+		int beforeAllCells = 1;
+		int afterAllCells = 1;
+		// these are two testers to see if the new cell that will be inputted matches 1 of 3 cases
+		/* There are 3 cases that can happen. 
+		 * 1. The new cell will have to be put right at the beginning of the linked list as it is the smallest data amount. 
+		 * 2. The new cell will have to be put all the way at the end of the linked list as it doesn't fit between any other nodes.
+		 * 3. The new cell will be put in between 2 nodes since it is smaller than the next node but bigger than the previous node.
+		 * The 1 means it is true and 0 means it is false.
+		 * */
+		
+		Node beforeOne = headCell;
+		// The starting cell that lets you check edge cases and go on in the loop.
+
+		if(beforeOne == null) {
+			//empty list so first new element should be the firstCell and lastCell
+			// kind of an edge case
+			headCell = newOne;
+			lastCell = newOne;
+			size++;
+			// increment size since you have to add in a cell to the list
+			return true;
+		}
+
+		
+		int counter = 0;
+		// counter is used for the loop to make sure it goes through all of the elements in the linked list
+		while(counter < size) {
+			
+			if(beforeOne.next != null && (beforeOne.data <=newOne.data && beforeOne.next.data > newOne.data)) {
+				Node next = beforeOne.next;
+				newOne.next = next;
+				
+				newOne.prev = beforeOne;
+				next.prev = newOne;
+				beforeOne.next = newOne;
+				
+				// this basically reassigns the pointers for next and previous so that it can put in the new linked cell right in the middle
+				// the previous and next cell pointers changes based on the position of the new linked cell which is called newOne
+				
+				size++;
+				// increments size instance variable
+				return true;
+			} 
+			
+			
+			if(beforeOne.next != null && beforeOne.data < newOne.data) {
+				beforeAllCells = 0;
+				// if there are no more cells in the linked list & the value of the previous cell is smaller than the value of the new inputted cell
+				// then this will not be one of the 3 cases specified above.
+				// There cannot be a new linked cell when there is no more cells to go to which is why you have to check that the next cell is not null
+			}
+			if(beforeOne.next != null && beforeOne.data > newOne.data) {
+				afterAllCells = 0;
+				// if there are no more cells in the linked list & the value of the previous cell is bigger than the value of the new inputted cell
+				// then this will not be one of the 3 cases specified above.
+				// There cannot be a new linked cell when there is no more cells to go to which is why you have to check that the next cell is not null
+			}
+			beforeOne = beforeOne.next;
+			// Need to allow the cells to continue going through the list otherwise, it will just be stuck at the first cell at the beginning of the list.
+			counter++;
+			
+		}
+
+
+		if(afterAllCells != 0) {
+			Node finalOne = lastCell;
+			lastCell = newOne;
+			newOne.prev = finalOne;
+			finalOne.next = newOne;
+			// this if statement takes care of the second case specified above. If the new cell has to be put all the way at the end, you have to establish 
+			// that new cell as the lastCell and move the previous old cell back one
+
+			size++;
+			return true;
+		}
+		if(beforeAllCells != 0) {
+			Node beginOne = headCell;
+			headCell = newOne;
+			
+			beginOne.prev = newOne;
+			newOne.next = beginOne;
+			// this if statement takes care of the first case specified above. If the new cell has to be put all the way at the beginning, you have to establish 
+			// that new cell as the headCell or the first cell and move the previous head cell in front of the new cell			
+			size++;
+			return true;
+		}
+
+
+
+		return false;
+
+	
+	}
+
+	@Override
+	public boolean remove(int index) {
+		// if headCell is empty, then the list doesn't contain any cells for it to remove
+		if(headCell == null) {
+			return false;
+		}
+		// not a possible parameter
+		if(index > size) {
+			return false;
+		}
+		// not a possible parameter
+		if(index < 0) {
+			return false;
+		}
+		if(index == 0) {
+			Node newOne = headCell.next;
+			headCell = newOne;
+			size--;
+			return false;
+			// if it wants to remove the headCell, you have to move the headCell to the next cell 
+			// otherwise the list will have an empty space at the beginning
+		}
+
+		else if(index > 0) {
+
+			if(index == size-1) {
+				//removes last cell in the list
+				lastCell.next = null;
+				lastCell = lastCell.prev;
+				// changes the lastCell position so the linked list shrinks
+				size--;
+				return true;
+			}  else {
+
+				Node current = headCell;
+
+				for(int j=0; j<index;j++) {
+					current = current.next;
+				}
+				// allows you to go through each of the cells in the list until you find the exact index that has the cell
+				// you want to remove.
+
+
+				Node previous = current.prev;
+				Node nextOne = current.next;
+				// takes out the pointers from the cell that is to be removed and changes the linked list
+
+				previous.next = nextOne;
+				nextOne.prev = previous;
+
+				size--;
+				// size decrements since you are removing a cell which shrinks the linked list size
+				return true;
+			}
+		}
+
+
+		return false;
+		// this means that the cell was not actually removed
+
+
+
+	}
+
+	@Override
+	public double get(int index) {
+		// checks edge cases so if headCell is null, there is not a cell for the linked list
+		// to actually retrieve
+
+		if(headCell == null) {
+			return Double.NaN;
+		}
+		// parameter is not possible or valid
+		if(index > size) {
+			return Double.NaN;
+		}
+		// parameter is not possible or valid
+		if(index < 0) {
+			return Double.NaN;
+
+		}
+
+
+		int counter = 0;
+		// counter is used to keep the while loop going until the condition needs to be stopped
+		int indexValue = 1;
+		// indexValue keeps track of what index the current cell we are looking at is located
+
+		while (counter != 1) {
+			if(0 == index) {
+				return headCell.data;
+				// returns the first cell in the linked list since index is 0
+			} else if(indexValue == index ){
+				return headCell.next.data;
+				// it'll return the correct cell and go through all the cells in the linked cell
+				// since it is inside a loop
+			}
+			else {
+				indexValue++;
+				// increments the index value if it doesn't match the parameter
+			}
+		}
+		return Double.NaN;
+		// last case resort if nothing else works
+
+	}
+
+	@Override
+	public int size() {
+
+		//	for(Node p=headCell;p!=null;p=p.next) {
+		//       
+		//         p = p.next;
+		//         size++;
+		//         
+		//	} 
+		// this could also be a way to check for size if I didn't make size 
+		// 
+
+		return size;
+		// just have to return size because I made size as a private class
+		// instance variable so this size variable will change after going through
+		// different methods
+	}
+
+	@Override
+	public boolean isEmpty() {
+
+		if(size == 0) {
+			return true;
+		}
+		// since size is a private instance field, size should be accurate based on how I 
+		// decremented and incremented it throughout the class
+		return false;
+
+	}
+
+	@Override
+	public void clear() {
+
+		headCell = null;
+		lastCell = null;
+		// if the headCell and lastCell are null, then that means there is no linked list
+		size = 0;
+		// updates the size variable to make sure it is counting the right amount of cells in a link
+
+
+	}
+}
