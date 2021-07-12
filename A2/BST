@@ -1,0 +1,354 @@
+package BST_A2;
+
+public class BST implements BST_Interface{
+	public BST_Node root;
+	public int size;
+
+	public BST(){ size=0; root=null; }
+
+	@Override
+	//used for testing, please leave as is
+	public BST_Node getRoot(){ return root; }
+
+	@Override
+	public boolean insert(String s) {
+		
+		if(root == null) {
+			// if the root is null, then you need to make a new node to 
+			// add it in
+			BST_Node new_one = new BST_Node(s);
+			root = new_one;
+			size++;
+			// increment size because you added a new node
+			return true;
+		}
+
+		BST_Node new_one = root;
+		
+
+		int i=1;
+		// breaks the while loop eventually
+
+		while(i!=0) {
+			// you need a while loop to go through each of the nodes in the BST
+			if(root.data == s) {
+				return false;
+				// you cannot have duplicate values inside a BST so you can't add a new node
+			}
+			else if(new_one.data.compareTo(s) < 0) {
+				// comparing lexicographically 
+
+				if(new_one.right == null) {
+					// it adds the new node to the right
+					new_one.right = new BST_Node(s);
+					
+					i=0;
+					// gets out of the loop
+					
+					size++;
+					return true;
+				} else {
+					new_one= new_one.right;
+					// instead of recursion, this uses the while loop to keep
+					// going to the right node 
+				}
+
+			} else {
+
+				if(new_one.left == null) {
+					// it adds the new node to the left
+					new_one.left = new BST_Node(s);
+					
+					i=0;
+					// gets out of the loop
+					
+					size++;
+					return true;
+				} else {
+					new_one = new_one.left;
+					// instead of recursion, this uses the while loop to keep
+					// going to the left node 
+				}
+			}
+		}
+		return false;
+
+
+
+	}
+
+	@Override
+	public boolean remove(String s) {
+
+		/*
+		 * There are 3 cases of removing a node
+		 * 1. There are no children so just remove the root
+		 * 2. There is 1 child so just re-assign 1 child
+		 * 3. There are 2 children so remove that node and then
+		 * you need to re-assign children based on their values too
+		 */
+
+		//BST original = null;
+		//original = this;
+
+		if(size == 0) {
+			return false;
+		}
+		if(contains(s) == false) {
+			return false;
+			// the tree doesn't have the value of s so
+			// it cannot remove that nonexistent value
+		}
+
+
+
+		String verify = root.data;
+		BST_Node current = root;
+		BST_Node prev = current;
+
+		if(verify.equals(s)) {
+			// first need to check if s is even inside the tree
+			 
+
+			// start of first case
+
+			if(current.left == null && current.right == null) {
+				// so if the right and left nodes are empty, then either remove
+				// the root or remove the only node itself
+				if(current == root) {
+					root = null;
+					size--;
+					return true;
+					// if it is the root then remove it by setting it to null
+				} 
+				else if(prev.left == current) {
+					prev.left = null;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				} else {
+					prev.right = null;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				}
+
+				// end of first case
+			}
+
+			// start of second case
+			else if(current.left == null && current.right != null) {
+				// for right subtree removal because there is only 1 child, the right branch
+				if(current == root) {
+					root = root.right;
+					size--;
+					return true;
+					// if it is the root, empty it by setting it equal to null
+				}
+
+				if(prev.left == current) {
+					prev.left = current.right;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				} else {
+					prev.right = current.right;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				}
+			}
+
+			//for left subtree removal because there is only 1 child, the left branch
+			else if(current.right == null && current.left != null) {
+				if(current == root) {
+					root = root.left;
+					size--;
+					return true;
+					// if it is the root, empty it by setting it equal to null
+				}
+
+				if(prev.left == current) {
+					prev.left = current.left;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				} else {
+					prev.right = current.left;
+					size--;
+					return true;
+					// this makes sure that the left branch is empty too for the parent 
+					// of the node that was removed
+				}
+			}
+			
+			// end of second case
+			
+			/*
+			 * first & second case were similar in how they removed the node
+			 * third case is different because you have to check the values of the nodes
+			 * before you re-assign its place in the BST, to ensure that it is still sorted
+			 */
+		}
+			return false;
+
+
+
+
+
+
+
+		}
+
+
+		@Override
+		public String findMin() {
+
+
+			if(size == 0) {
+				return null;
+			}
+			
+			if(root == null) {
+				return null;
+				// extra edge case because if the root is null,
+				// then the tree shouldn't exist so there is no max value
+			}
+
+
+			while(root.left !=null) {
+				root = root.left;
+				// naturally, in a BST, the min values will be on the left branches so just
+				// keep going to the next left node until the value is the smallest
+			} 
+			return root.data;
+			// returns the smallest string value in the BST
+
+		}
+
+		@Override
+		public String findMax() {
+
+			if(size == 0) {
+				return null;
+			}
+			if(root == null) {
+				return null;
+				// extra edge case because if the root is null,
+				// then the tree shouldn't exist so there is no max value
+			}
+
+			BST_Node current = root;
+
+			while(current.right != null) {
+				current = current.right;
+				// naturally, the max values in a BST will be on the right branch
+				// so keep going to the right node until it reaches the largest value
+				// it will reach the largest value when it gets to the last node until 
+			// the next one is null because it is assumed that the last node
+				// has the largest value
+			}
+			return current.data;
+
+			// returns the string value of the largest value node
+
+		}
+
+		@Override
+		public boolean empty() {
+			if(size == 0) {
+				return true;
+				// only empty if there are no nodes in the BST
+				// utilizes the global variable size 
+				// size will increment and decrement within each method
+			}
+			if(root == null) {
+				// there are no elements in the tree
+				return true;
+			}
+			
+			// 2 edge cases
+			
+
+			return false;
+		}
+
+		@Override
+		public boolean contains(String s) {
+			if(size == 0) {
+				return false;
+				// if the BST is empty, then there is nothing to compare to see
+				// if the string value is in the BST
+			}
+			if(s == null) {
+				return false;
+				// if the string is empty, then you can't compare it
+			}
+
+			BST_Node current = root;
+
+
+			if(current == null) {
+				return false;
+				// if there is no root, then you can't compare it to the string value
+			}
+
+
+			while(current!=null) {
+				if(current.data.compareTo(s) == 0) {
+					// if it is equal to 0, then that means that the node's value
+					// and s are the same 
+					return true;
+				}
+				if(current.data.compareTo(s) > 0) {
+					current = current.left;
+					// with the compareTo function, a positive number means that 
+					// the value in the BST is less than the new s value
+				}
+				else {
+					current = current.right;
+					// with the compareTo function, a negative number means that 
+					// the value in the BST is greater than the new s value
+				}
+				/*
+				 * Until the next node becomes null, you will
+				 * go to the left or right depending on the 
+				 * lexicographical value of the strings
+				 */
+			}
+
+			return false;
+
+
+		}
+
+		@Override
+		public int size() {
+			return size;
+			// utilizes the global variable size 
+			// size will increment and decrement within each method
+		}
+
+
+		public int height() {
+
+			if(size == 0 || root == null) {
+				return -1;
+				// edge cases
+			}
+
+
+			return root.height_of_tree();
+			// height_of_tree method is in BST_Node class so that 
+			// I can call this method directly on a node instead
+			// of making a new binary search tree object
+
+		}
+
+
+	}
